@@ -1,0 +1,11 @@
+.DS_Store
+.claude/
+
+# Local prototype server/runtime artifacts
+.superpowers/**/.server.pid
+.superpowers/**/.server.log
+.superpowers/**/.server-stopped
+.superpowers/**/.events
+
+# Nested/local git metadata
+docs/.git/

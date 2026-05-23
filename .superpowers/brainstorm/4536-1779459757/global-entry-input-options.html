@@ -1,0 +1,66 @@
+<h2>Janus Global Entry 输入区修正方向</h2>
+<p class="subtitle">这次只看输入区：如何把“表达任务”和“打开面板/治理入口”分层，如何让语音交互符合常识，并去掉拙劣的双重边框。</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#07111f;border-radius:22px;padding:28px;color:#e5f0ff;min-height:220px;display:flex;align-items:center;justify-content:center;">
+        <div style="width:520px;border-radius:999px;background:rgba(255,255,255,.08);box-shadow:0 22px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);padding:10px 12px;display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;">
+          <div style="width:34px;height:34px;border-radius:50%;background:rgba(79,140,255,.22);display:grid;place-items:center;font-weight:800;">J</div>
+          <div style="color:#dbeafe;font-size:15px;">你想让 Janus 做什么？</div>
+          <button style="height:34px;border:0;border-radius:999px;background:rgba(255,255,255,.1);color:#bfdbfe;padding:0 13px;">按住说话</button>
+          <button style="height:34px;width:34px;border:0;border-radius:50%;background:#3b82f6;color:white;">↵</button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. 推荐：单一任务胶囊</h3>
+      <p>只保留 Janus 标识、任务输入、按住说话、提交。没有“打开面板”，没有“输入任务”状态 chip，视觉上是一个完整入口。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#07111f;border-radius:22px;padding:28px;color:#e5f0ff;min-height:220px;display:flex;align-items:center;justify-content:center;">
+        <div style="width:540px;display:grid;gap:9px;">
+          <div style="border-radius:24px;background:rgba(255,255,255,.08);box-shadow:0 22px 60px rgba(0,0,0,.35);padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;">
+            <div style="width:32px;height:32px;border-radius:11px;background:rgba(79,140,255,.2);display:grid;place-items:center;font-weight:800;">J</div>
+            <div style="color:#dbeafe;font-size:15px;">打开微信给张三写条消息…</div>
+            <button style="height:34px;width:34px;border:0;border-radius:50%;background:#3b82f6;color:white;">↵</button>
+          </div>
+          <div style="padding-left:48px;color:#93a4ba;font-size:12px;display:flex;gap:14px;">
+            <span>⌘J 唤起</span><span>按住空格说话</span><span>Esc 收起</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. 双层提示型</h3>
+      <p>主输入很干净，辅助操作放到下方小字提示。更可教，但视觉上稍重，且语音按钮不如 A 直接。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#07111f;border-radius:22px;padding:28px;color:#e5f0ff;min-height:220px;display:flex;align-items:center;justify-content:center;">
+        <div style="width:520px;border-radius:22px;background:rgba(255,255,255,.06);box-shadow:0 22px 60px rgba(0,0,0,.35);padding:14px;display:grid;gap:12px;">
+          <div style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;">
+            <div style="width:32px;height:32px;border-radius:11px;background:rgba(79,140,255,.2);display:grid;place-items:center;font-weight:800;">J</div>
+            <div style="color:#dbeafe;font-size:15px;">你想让我做什么？</div>
+            <button style="height:32px;width:32px;border:0;border-radius:50%;background:#3b82f6;color:white;">↵</button>
+          </div>
+          <button style="height:40px;border:0;border-radius:16px;background:rgba(255,255,255,.10);color:#bfdbfe;">按住说话，松开结束</button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. 语音优先型</h3>
+      <p>语音交互最清楚，但输入区更高，Global Entry 存在感变强，容易压过当前工作现场。</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>我的建议</h3>
+  <p>选 A：它最符合 Janus “轻入口”的边界。托管中心/打开面板应从任务态或胶囊状态进入，而不是和任务输入抢同一层级。语音采用“按住说话，松开结束”，提交按钮只在有文本或语音转写后强调。</p>
+</div>

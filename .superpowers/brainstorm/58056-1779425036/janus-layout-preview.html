@@ -1,0 +1,187 @@
+<style>
+  :root {
+    --bg: #08111f;
+    --panel: rgba(13, 20, 34, .96);
+    --line: rgba(148, 163, 184, .2);
+    --text: #edf4ff;
+    --muted: #91a1b8;
+    --blue: #4f8cff;
+    --green: #4ade80;
+    --amber: #f8bf4c;
+  }
+
+  .janus-prototype { font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", sans-serif; color: var(--text); }
+  .prototype-note { margin: 0 0 18px; color: #64748b; font-size: 14px; line-height: 1.7; }
+
+  .desktop-stage {
+    position: relative; height: 690px; border-radius: 26px; overflow: hidden;
+    background: radial-gradient(circle at 18% 16%, rgba(79, 140, 255, .14), transparent 29%), radial-gradient(circle at 70% 40%, rgba(7, 193, 96, .08), transparent 32%), linear-gradient(145deg, #07101f 0%, #111827 60%, #07101f 100%);
+    border: 1px solid rgba(148, 163, 184, .26); box-shadow: 0 34px 100px rgba(2, 6, 23, .48);
+  }
+  .desktop-menubar { height: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: rgba(2, 6, 23, .72); border-bottom: 1px solid rgba(148, 163, 184, .16); font-size: 12px; color: #cbd5e1; backdrop-filter: blur(16px); }
+  .desktop-body { display: grid; grid-template-columns: 1fr 420px; gap: 18px; height: calc(100% - 34px); padding: 18px; }
+  .workspace { position: relative; border-radius: 18px; overflow: hidden; background: #020617; border: 1px solid rgba(148, 163, 184, .2); box-shadow: inset 0 0 0 1px rgba(255,255,255,.03), 0 24px 70px rgba(0,0,0,.38); }
+  .terminal-window { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 23, 42, .94), rgba(2, 6, 23, .98)), repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 24px); }
+  .terminal-titlebar { height: 38px; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: rgba(15, 23, 42, .86); border-bottom: 1px solid rgba(148, 163, 184, .14); }
+  .traffic { display: flex; gap: 7px; } .dot { width: 11px; height: 11px; border-radius: 50%; } .red { background: #ff5f57; } .yellow { background: #ffbd2e; } .green { background: #28c840; }
+  .terminal-title { font-size: 12px; color: #94a3b8; letter-spacing: .02em; }
+  .terminal-content { padding: 24px 28px; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 13px; line-height: 1.95; color: #86efac; }
+  .terminal-content .muted { color: #64748b; } .terminal-content .blue { color: #93c5fd; }
+  .cursor { display: inline-block; width: 8px; height: 15px; background: #86efac; transform: translateY(2px); animation: blink 1.1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: .15; } }
+
+  .wechat-window { position: absolute; left: 74px; top: 128px; width: 540px; height: 390px; border-radius: 16px; overflow: hidden; background: #f5f5f5; color: #1f2937; border: 1px solid rgba(15, 23, 42, .25); box-shadow: 0 34px 90px rgba(0,0,0,.48), 0 0 0 1px rgba(255,255,255,.7) inset; }
+  .wechat-titlebar { height: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; background: #ededed; border-bottom: 1px solid #d7d7d7; font-size: 12px; color: #6b7280; }
+  .wechat-main { height: calc(100% - 34px); display: grid; grid-template-columns: 58px 154px 1fr; }
+  .wechat-rail { background: #2e2e2e; display: flex; flex-direction: column; align-items: center; gap: 18px; padding-top: 18px; }
+  .avatar { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(145deg, #86efac, #07c160); color: white; display: grid; place-items: center; font-weight: 800; font-size: 13px; }
+  .rail-icon { width: 24px; height: 24px; border-radius: 7px; background: rgba(255,255,255,.12); }
+  .wechat-list { background: #e9e9e9; border-right: 1px solid #d5d5d5; padding: 10px 8px; }
+  .wechat-search { height: 28px; border-radius: 6px; background: #dcdcdc; color: #6b7280; font-size: 12px; display: flex; align-items: center; padding: 0 9px; margin-bottom: 10px; }
+  .contact { display: flex; gap: 8px; align-items: center; padding: 8px; border-radius: 8px; font-size: 12px; color: #374151; }
+  .contact.active { background: #d1d5db; }
+  .contact-avatar { width: 28px; height: 28px; border-radius: 7px; background: #9ca3af; color: white; display: grid; place-items: center; font-size: 12px; font-weight: 700; flex: none; }
+  .chat-pane { display: grid; grid-template-rows: 44px 1fr 104px; background: #f7f7f7; }
+  .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid #e5e7eb; font-weight: 700; }
+  .chat-body { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .chat-bubble { max-width: 210px; padding: 9px 11px; border-radius: 10px; font-size: 13px; line-height: 1.45; }
+  .bubble-left { background: white; border: 1px solid #e5e7eb; align-self: flex-start; } .bubble-right { background: #95ec69; align-self: flex-end; }
+  .draft-status { align-self: flex-end; font-size: 11px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 999px; padding: 4px 8px; }
+  .chat-input { background: white; border-top: 1px solid #e5e7eb; padding: 10px 12px; } .toolbar { display: flex; gap: 8px; margin-bottom: 8px; } .tool-dot { width: 15px; height: 15px; border-radius: 5px; background: #d1d5db; } .input-box { height: 42px; border-radius: 8px; background: #f9fafb; border: 1px solid #e5e7eb; padding: 8px; font-size: 13px; color: #111827; }
+
+  .global-entry { position: absolute; left: 42px; right: 42px; bottom: 36px; z-index: 5; border-radius: 22px; padding: 14px 16px; background: rgba(15, 23, 42, .84); border: 1px solid rgba(147, 197, 253, .35); box-shadow: 0 24px 70px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.08); backdrop-filter: blur(18px); display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+  .entry-hotkey { color: #bfdbfe; background: rgba(37, 99, 235, .28); border: 1px solid rgba(147, 197, 253, .32); border-radius: 10px; padding: 7px 9px; font-size: 12px; font-weight: 800; }
+  .entry-text { color: #e5edf7; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .entry-status { color: #fde68a; background: rgba(120, 53, 15, .72); border: 1px solid rgba(245, 158, 11, .44); border-radius: 999px; padding: 6px 9px; font-size: 11px; }
+
+  .janus-panel { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 28px 80px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.06); backdrop-filter: blur(22px); display: flex; flex-direction: column; overflow: hidden; }
+  .panel-top { padding: 18px 18px 14px; border-bottom: 1px solid var(--line); }
+  .panel-kicker { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin-bottom: 12px; }
+  .status-pill { text-transform: none; letter-spacing: 0; color: #fde68a; background: rgba(120, 53, 15, .72); border: 1px solid rgba(245, 158, 11, .55); border-radius: 999px; padding: 4px 8px; }
+  .panel-title { font-size: 22px; line-height: 1.18; font-weight: 850; letter-spacing: -.025em; }
+  .panel-copy { margin-top: 9px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+  .panel-scroll { flex: 1; min-height: 0; overflow: auto; padding: 16px 18px 112px; }
+  .hero-stop { border-radius: 20px; padding: 16px; background: radial-gradient(circle at 92% 0%, rgba(248, 191, 76, .22), transparent 38%), linear-gradient(180deg, rgba(30, 41, 59, .92), rgba(15, 23, 42, .98)); border: 1px solid rgba(248, 191, 76, .28); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+  .hero-label { color: #f8bf4c; font-size: 12px; margin-bottom: 7px; } .hero-title { font-size: 17px; font-weight: 820; line-height: 1.35; } .hero-proof { margin-top: 10px; color: #bbf7d0; font-size: 12px; line-height: 1.6; }
+  .message-preview { margin-top: 14px; border-radius: 22px; padding: 16px; background: linear-gradient(180deg, rgba(248, 250, 252, .98), rgba(226, 232, 240, .96)); color: #0f172a; box-shadow: 0 18px 45px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.9); }
+  .recipient-row { display: flex; justify-content: space-between; align-items: center; color: #475569; font-size: 12px; margin-bottom: 10px; }
+  .unsent-badge { color: #92400e; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 999px; padding: 4px 8px; font-weight: 700; }
+  .field-note { margin-top: 12px; color: #64748b; font-size: 12px; line-height: 1.55; }
+  .ghost-action { margin-top: 12px; border: 1px solid rgba(15, 23, 42, .12); background: rgba(15, 23, 42, .06); color: #1e40af; border-radius: 999px; padding: 7px 10px; font-size: 12px; font-weight: 760; cursor: pointer; }
+  .decision-note { margin-top: 14px; border-radius: 18px; padding: 13px; background: rgba(69, 26, 3, .52); border: 1px solid rgba(245, 158, 11, .35); color: #fde68a; font-size: 13px; line-height: 1.55; }
+  .story-item { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; color: #cbd5e1; font-size: 12px; line-height: 1.45; }
+  .story-line { margin-top: 14px; padding: 14px; border-radius: 18px; background: rgba(2, 6, 23, .38); border: 1px solid rgba(148, 163, 184, .14); }
+ .story-item + .story-item { margin-top: 11px; }
+  .check, .pause { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 800; } .check { background: rgba(74,222,128,.16); color: #86efac; border: 1px solid rgba(74,222,128,.42); } .pause { background: rgba(248,191,76,.16); color: #fde68a; border: 1px solid rgba(248,191,76,.42); }
+  .governance-card { margin-top: 14px; border-radius: 18px; overflow: hidden; background: rgba(15, 23, 42, .72); border: 1px solid rgba(148, 163, 184, .18); }
+  .governance-head { display: flex; justify-content: space-between; align-items: center; padding: 13px 14px; border-bottom: 1px solid rgba(148, 163, 184, .13); }
+  .governance-head b { font-size: 13px; } .link-button { border: 0; background: transparent; color: #93c5fd; font-size: 12px; cursor: pointer; padding: 0; }
+  .governance-list { padding: 6px 14px 12px; } .gov-row { display: grid; grid-template-columns: 70px 1fr; gap: 10px; padding: 9px 0; font-size: 12px; line-height: 1.45; border-bottom: 1px solid rgba(148, 163, 184, .09); } .gov-row:last-child { border-bottom: 0; } .gov-row span { color: var(--muted); } .gov-row strong { color: #e5edf7; font-weight: 650; }
+  .not-done { margin-top: 14px; border-radius: 18px; padding: 13px; background: rgba(31, 41, 55, .58); border: 1px solid rgba(148, 163, 184, .14); color: #cbd5e1; font-size: 12px; line-height: 1.65; }
+  .managed-center { display: none; height: 100%; flex-direction: column; }
+  .janus-panel.mode-managed .task-panel { display: none; }
+  .janus-panel.mode-managed .managed-center { display: flex; }
+  .back-button { border: 0; background: transparent; color: #93c5fd; font-size: 12px; cursor: pointer; padding: 0; }
+  .managed-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 14px 18px 0; }
+  .managed-tab { border: 1px solid rgba(148, 163, 184, .18); background: rgba(15, 23, 42, .74); color: #cbd5e1; border-radius: 999px; padding: 8px 0; font-size: 12px; cursor: pointer; }
+  .managed-tab.active { background: #2563eb; color: white; border-color: rgba(147, 197, 253, .72); box-shadow: 0 10px 24px rgba(37, 99, 235, .24); }
+  .managed-pane { display: none; }
+  .managed-pane.active { display: grid; gap: 12px; }
+  .center-list { padding: 14px 18px 112px; overflow: auto; }
+  .readonly-tag { display: inline-block; color: #bfdbfe; background: rgba(37, 99, 235, .2); border: 1px solid rgba(147, 197, 253, .28); border-radius: 999px; padding: 3px 7px; font-size: 10px; margin-left: 6px; }
+  .mini-actions { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
+  .mini-button { border: 1px solid rgba(148, 163, 184, .2); background: rgba(30, 41, 59, .78); color: #dbeafe; border-radius: 999px; padding: 6px 9px; font-size: 11px; cursor: pointer; }
+  .mini-button.danger { color: #fecdd3; border-color: rgba(251, 113, 133, .32); background: rgba(127, 29, 29, .32); }
+  .mini-button.primary { color: white; border-color: rgba(147, 197, 253, .55); background: #2563eb; }
+
+  .task-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid rgba(148, 163, 184, .09); }
+  .task-row:first-of-type { border-top: 0; }
+  .task-title { color: #f8fafc; font-weight: 700; }
+  .task-meta { color: #91a1b8; font-size: 11px; margin-top: 3px; }
+  .status-chip { border-radius: 999px; padding: 4px 8px; font-size: 10px; border: 1px solid rgba(148, 163, 184, .2); color: #cbd5e1; background: rgba(30, 41, 59, .68); }
+  .status-chip.active { color: #fde68a; border-color: rgba(245, 158, 11, .35); background: rgba(120, 53, 15, .48); }
+  .rule-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 9px 0; border-top: 1px solid rgba(148, 163, 184, .09); }
+  .rule-row:first-of-type { border-top: 0; }
+  .rule-name { color: #f8fafc; font-weight: 650; }
+  .rule-desc { color: #91a1b8; font-size: 11px; margin-top: 2px; }
+  .memory-row { padding: 10px 0; border-top: 1px solid rgba(148, 163, 184, .09); }
+  .memory-row:first-of-type { border-top: 0; }
+
+  .center-card { border-radius: 18px; padding: 14px; background: rgba(15, 23, 42, .72); border: 1px solid rgba(148, 163, 184, .18); color: #cbd5e1; font-size: 12px; line-height: 1.6; }
+  .center-card b { color: #f8fafc; display: block; margin-bottom: 6px; font-size: 13px; }
+  .center-card .state { display: inline-block; margin-top: 8px; color: #fde68a; background: rgba(120, 53, 15, .55); border: 1px solid rgba(245, 158, 11, .34); border-radius: 999px; padding: 4px 8px; font-size: 11px; }
+
+  .action-dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 18px 18px; background: linear-gradient(180deg, rgba(13,20,34,0), rgba(13,20,34,.94) 20%, rgba(13,20,34,1)); border-top: 1px solid rgba(148, 163, 184, .14); }
+  .primary-action, .stop-action { height: 40px; border-radius: 14px; border: 0; font-weight: 760; cursor: pointer; }
+  .primary-action { width: 100%; color: white; background: linear-gradient(135deg, #3b82f6, #1d4ed8); box-shadow: 0 14px 30px rgba(37, 99, 235, .28); }
+  .stop-action { width: 100%; margin-top: 8px; color: #fecdd3; background: rgba(127, 29, 29, .28); border: 1px solid rgba(251, 113, 133, .28); }
+</style>
+
+<div class="janus-prototype">
+  <h2>Janus 原型布局方向</h2>
+  <p class="prototype-note">现场优先修正版：用户不需要向 Janus 申请接管，直接操作微信就是接管信号。右侧面板只提供当前状态的主动作与停止入口；托管中心只管理跨任务的托管、权限、记忆。</p>
+
+  <div class="desktop-stage">
+    <div class="desktop-menubar"><div>Janus Prototype · macOS Working Stage</div><div>Fri 10:24 · Wi‑Fi · 84%</div></div>
+    <div class="desktop-body">
+      <div class="workspace">
+        <div class="terminal-window"><div class="terminal-titlebar"><div class="traffic"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div><div class="terminal-title">Terminal — rao@mac · /private/Janus</div></div><div class="terminal-content"><span class="blue">rao@mac</span> Janus % npm run dev<br/>ready - started server on localhost:3000<br/>event - compiled client and server successfully<br/><span class="muted"># 当前环境是 Terminal，但 Janus 可以进入目标 App 执行被授权步骤</span><br/><br/><span class="blue">rao@mac</span> Janus % <span class="cursor"></span></div></div>
+        <div class="wechat-window"><div class="wechat-titlebar"><div class="traffic"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div><div>微信</div><div>未发送</div></div><div class="wechat-main"><div class="wechat-rail"><div class="avatar">R</div><div class="rail-icon"></div><div class="rail-icon" style="background:rgba(7,193,96,.45);"></div><div class="rail-icon"></div></div><div class="wechat-list"><div class="wechat-search">搜索：张三</div><div class="contact active"><div class="contact-avatar">张</div><div><b>张三</b><br/><span style="color:#6b7280">我十分钟后到</span></div></div><div class="contact"><div class="contact-avatar">文</div><div>文件传输助手</div></div><div class="contact"><div class="contact-avatar">产</div><div>产品群</div></div><div class="contact"><div class="contact-avatar">李</div><div>李四</div></div></div><div class="chat-pane"><div class="chat-header"><span>张三</span><span style="font-size:18px;color:#9ca3af">···</span></div><div class="chat-body"><div class="chat-bubble bubble-left">刚才那个时间方便吗？</div><div class="chat-bubble bubble-right">我十分钟后到</div><div class="draft-status">Janus 已输入草稿，发送前等待确认</div></div><div class="chat-input"><div class="toolbar"><span class="tool-dot"></span><span class="tool-dot"></span><span class="tool-dot"></span></div><div class="input-box">我十分钟后到</div></div></div></div></div>
+        <div class="global-entry"><div class="entry-hotkey">⌘J</div><div class="entry-text">打开微信给张三写条消息，说我十分钟后到，发送前确认</div><div class="entry-status">等待确认</div></div>
+      </div>
+
+      <aside class="janus-panel" id="janus-panel">
+        <div class="task-panel">
+          <div class="panel-top"><div class="panel-kicker"><span>Janus</span><button class="link-button" id="open-managed">托管中心</button></div><div class="panel-title">草稿已准备好</div><div class="panel-copy">给张三的消息已经放进微信，发送前需要你确认。</div></div>
+          <div class="panel-scroll">
+            <section class="message-preview"><div class="recipient-row"><span>发给 张三</span><span class="unsent-badge">待确认</span></div><div class="message-text">我十分钟后到</div><button class="ghost-action">让 Janus 改写草稿</button><div class="field-note">你也可以直接在微信中修改或发送；一旦你操作目标 App，Janus 会暂停并同步状态。</div></section>
+            <section class="story-line"><div class="story-item"><div class="check">✓</div><div>打开微信并找到张三</div></div><div class="story-item"><div class="check">✓</div><div>输入草稿</div></div><div class="story-item"><div class="pause">Ⅱ</div><div style="color:#fde68a">停在外部可见动作前</div></div></section>
+          </div>
+          <div class="action-dock"><button class="primary-action" id="send-once">仅本次发送</button><button class="stop-action" id="stop-task">停止任务</button></div>
+        </div>
+
+        <div class="managed-center">
+          <div class="panel-top"><div class="panel-kicker"><button class="back-button" id="back-task">← 当前任务</button><span>托管中心</span></div><div class="panel-title">托管中心</div><div class="panel-copy">管理 Janus 受托的委托、长期权限和记忆。</div></div>
+          <div class="managed-tabs"><button class="managed-tab active" data-managed-tab="delegate">托管</button><button class="managed-tab" data-managed-tab="permission">权限</button><button class="managed-tab" data-managed-tab="memory">记忆</button></div>
+          <div class="center-list">
+            <div class="managed-pane active" data-managed-pane="delegate">
+              <section class="center-card"><b>托管列表</b><div class="task-row"><div><div class="task-title">给张三创建微信消息草稿</div><div class="task-meta">当前 · 微信 · 等待确认 · 外部影响 0</div><div class="mini-actions"><button class="mini-button primary">打开</button><button class="mini-button danger">停止</button></div></div><span class="status-chip active">当前</span></div><div class="task-row"><div><div class="task-title">打开飞书需求评审文档</div><div class="task-meta">今天 09:42 · 飞书 · 外部影响 0</div></div><button class="mini-button">查看</button></div><div class="task-row"><div><div class="task-title">给李四创建邮件草稿</div><div class="task-meta">昨天 · 邮件 · 用户现场接管</div></div><button class="mini-button">查看</button></div></section>
+            </div>
+            <div class="managed-pane" data-managed-pane="permission">
+              <section class="center-card"><b>允许自动</b><div class="rule-row"><div><div class="rule-name">打开指定 App</div><div class="rule-desc">微信、飞书、浏览器等</div></div><button class="mini-button">编辑</button></div><div class="rule-row"><div><div class="rule-name">搜索联系人 / 文档</div><div class="rule-desc">仅限任务指定对象</div></div><button class="mini-button">编辑</button></div><div class="rule-row"><div><div class="rule-name">输入草稿</div><div class="rule-desc">消息、邮件、表单草稿</div></div><button class="mini-button danger">撤销</button></div></section>
+              <section class="center-card"><b>每次确认</b><div class="rule-row"><div><div class="rule-name">发送消息 / 邮件</div><div class="rule-desc">可改为禁止，不可改为自动</div></div><button class="mini-button">编辑</button></div><div class="rule-row"><div><div class="rule-name">提交表单 / 上传文件</div><div class="rule-desc">外部可见动作</div></div><button class="mini-button">编辑</button></div></section>
+              <section class="center-card"><b>禁止</b><div class="rule-row"><div><div class="rule-name">读取任务外聊天</div><div class="rule-desc">保护任务边界</div></div><button class="mini-button">编辑</button></div><div class="rule-row"><div><div class="rule-name">自动保存联系人映射</div><div class="rule-desc">必须进入记忆确认</div></div><button class="mini-button">编辑</button></div></section>
+            </div>
+            <div class="managed-pane" data-managed-pane="memory">
+              <section class="center-card"><b>待确认学习</b><div class="memory-row"><div class="rule-name">“张三”可能对应当前联系人</div><div class="rule-desc">来源：当前微信草稿任务</div><div class="mini-actions"><button class="mini-button">仅本次</button><button class="mini-button primary">记住</button><button class="mini-button">忽略</button></div></div></section>
+              <section class="center-card"><b>已保存记忆</b><div class="memory-row"><div class="rule-name">默认发送前确认</div><div class="rule-desc">来源：用户设置 · 用途：确认偏好</div><div class="mini-actions"><button class="mini-button">编辑</button><button class="mini-button danger">删除</button></div></div><div class="memory-row"><div class="rule-name">发票默认保存到 财务/发票</div><div class="rule-desc">来源：用户确认 · 不包含删除或上传授权</div><div class="mini-actions"><button class="mini-button">编辑</button><button class="mini-button danger">删除</button></div></div></section>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const send = document.getElementById('send-once');
+    const stopTask = document.getElementById('stop-task');
+    const panel = document.getElementById('janus-panel');
+    const openManaged = document.getElementById('open-managed');
+    const backTask = document.getElementById('back-task');
+    const managedTabs = document.querySelectorAll('[data-managed-tab]');
+    const managedPanes = document.querySelectorAll('[data-managed-pane]');
+    send.addEventListener('click', () => { send.textContent = '已确认本次发送'; send.style.background = 'linear-gradient(135deg, #16a34a, #15803d)'; });
+    stopTask.addEventListener('click', () => { stopTask.textContent = '任务已停止'; });
+    openManaged.addEventListener('click', () => panel.classList.add('mode-managed'));
+    backTask.addEventListener('click', () => panel.classList.remove('mode-managed'));
+    managedTabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.managedTab;
+        managedTabs.forEach((item) => item.classList.toggle('active', item === tab));
+        managedPanes.forEach((pane) => pane.classList.toggle('active', pane.dataset.managedPane === target));
+      });
+    });
+  })();
+</script>
