@@ -1,4 +1,12 @@
-⏺ 下面用 Aporia / meta-agent 的方式做一次客观判断：先区分“项目想象”与“真实问题”，再评价价值、竞品差异、成本和是否值得继续。                  
+# Superseded positioning note
+
+本文为早期保守评审，强调低风险 MVP。当前产品方向已调整：Janus 的长期定位是全能受托 Agent；本文中“不要做全能 Agent”“不应继续作为大而全 Agent 平台推进”等结论仅作为风险提醒，不再作为产品定位依据。当前 canonical positioning 以 `README.md`、`janus-complete-product-design.md`、`janus-agent-product-design.md`、`janus-product-experience-design.md`、`janus-technical-architecture-design.md` 和 `janus-core-technology-validation-report.md` 为准。
+
+---
+
+# Janus 早期保守评审（历史存档）
+
+⏺ 下面用 Aporia / meta-agent 的方式做一次客观判断：先区分“项目想象”与“真实问题”，再评价价值、竞品差异、成本和是否值得继续。
                                                                                                                                              
   0. Aporia 判断                                                                                                                             
                                                                                                                                              
@@ -640,4 +648,4 @@
 
   一句话：
 
-  Janus 值得继续，但只值得作为“受托行动层的最小真实闭环”继续，不值得作为“全能桌面 Agent 平台”继续。
+  Janus 值得继续，但只值得作为“受托行动层的最小真实闭环”继续，不值得作为“全能桌面 Agent 平台”继续。（历史保守结论，已由本文开头 Superseded positioning note 标记为风险提醒，不再作为当前产品定位依据。）

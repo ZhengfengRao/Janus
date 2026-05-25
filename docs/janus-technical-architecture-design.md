@@ -12,7 +12,7 @@
 
 ## 1. 技术目标、非目标与成功标准
 
-Janus 的技术系统必须在 macOS 工作现场承接用户 Intent，捕获最小必要 Context，将目标结构化为 Task / Plan / Step，并在授权、风险、验证、中断、审计和记忆治理边界内执行。
+Janus 的技术系统必须在 macOS 工作现场承接用户 Intent，捕获最小必要 Context，将目标结构化为 Task / Plan / Step，并按照自主等级、授权范围、风险预算、验证、中断、审计和记忆治理边界执行。
 
 ### 1.1 技术目标
 
@@ -20,16 +20,17 @@ Janus 的技术系统必须在 macOS 工作现场承接用户 Intent，捕获最
 1. 在 macOS 任意工作现场唤起 Janus；
 2. 捕获当前上下文、选中对象、目标环境和用户显式限制；
 3. 将自然语言目标转化为可解释、可修改、可审计的 Plan；
-4. 将 Plan 拆解为带权限、风险和验证要求的 Step；
-5. 在授权范围内执行低风险动作；
+4. 将 Plan 拆解为带自主等级、权限、风险预算和验证要求的 Step；
+5. 按 autonomy level 与 risk budget 执行已授权 Step；
 6. 每个 Step 执行后验证结果；
-7. 不确定、高风险或验证不足时安全停下；
-8. L4/L5、外部可见、不可逆、身份性或高风险动作前强制确认；
+7. 不确定、超出风险预算或验证不足时安全停下或升级确认；
+8. L4/L5、外部可见、不可逆、身份性或高风险动作必须匹配授权 / 风险策略，否则升级确认；
 9. 支持用户随时暂停、停止或接管；
-10. 记录已做、未做、停下原因和外部影响；
+10. 记录已做、未做、授权依据、风险预算消耗、停下原因和外部影响；
 11. 将学习作为 Learning Candidate，经授权后才成为 Memory；
-12. 通过 Delegation Center 管理托管任务账本、跨任务授权规则、跨任务记忆和信任恢复证据；
-13. 支撑长按 Janus Entry 语音快路径：按下采集、松开提交，并在策略允许时快速推进到准备结果 / WaitingForApproval。
+12. 通过 Delegation Center 管理托管任务账本、跨任务授权规则、standing authorization、风险预算、跨任务记忆和信任恢复证据；
+13. 支撑长按 Janus Entry 语音快路径：按下采集、松开提交，并在策略允许时快速推进到授权内完成 / WaitingForApproval；
+14. 提供 Autonomy Policy Engine 与 Risk Budget Manager，使授权重复任务可无逐步确认完成。
 ```
 
 ### 1.2 技术非目标
@@ -51,16 +52,18 @@ Janus 的技术系统必须在 macOS 工作现场承接用户 Intent，捕获最
 
 ```text
 1. Intent 可结构化为 Task / Plan / Step；
-2. 每个 Step 都有 Action、Object、Environment、Permission、Risk、Verification Requirement；
+2. 每个 Step 都有 Action、Object、Environment、AutonomyLevel、Permission、RiskBudget、Verification Requirement；
 3. Execution Engine 不连续跨过验证；
-4. Policy & Risk Engine 能拦截 L4/L5 与 R 类风险事件；
+4. Autonomy Policy Engine / Policy & Risk Engine 能拦截未授权 L4/L5 与 R 类风险事件；
 5. Stop / Takeover 立即失效旧执行队列；
 6. SafelyStopped 是状态机一等状态；
-7. Audit Event 能复盘已做和未做；
+7. Audit Event 能复盘已做、未做、授权依据和风险预算消耗；
 8. Memory 保存必须经过授权；
 9. 通用 Action 原语优先于逐 App 脚本；
 10. R 类风险事件目标为 0；
-11. 清晰低风险机械路径能从 Intent 快速推进到可检查结果或 WaitingForApproval。
+11. 清晰低风险机械路径能从 Intent 快速推进到可检查结果或 WaitingForApproval；
+12. standing authorization 覆盖的重复 / 可撤销任务可无逐步确认完成；
+13. risk-budget violation 目标为 0。
 ```
 
 ---
@@ -121,19 +124,21 @@ Stop / Pause / Takeover / Revoke 是系统级控制事件。Takeover 或 Stop �
 ```text
 1. No Task, no Action；
 2. No Permission, no restricted Action；
-3. No Verification Requirement, no automatic Step；
-4. L4/L5 Action must pass Confirmation Gate；
-5. R 类风险候选必须被拦截、确认、降级或禁止；
-6. Executing 后必须进入 Verifying；
-7. Stop / Takeover invalidates pending queue；
-8. Learning Candidate is not Memory；
-9. Audit Event records done and not done；
-10. Recovery is not Completed；
-11. Model confidence is not verification；
-12. Memory is not Permission；
-13. Capability is not Permission；
-14. Current context is not task boundary；
-15. One confirmation is not long-term authorization。
+3. No RiskBudget, no budgeted autonomous external-impact Action；
+4. No Verification Requirement, no automatic Step；
+5. L4/L5 Action must pass Autonomy Policy / Risk Budget / Confirmation Gate；
+6. R 类风险候选必须被拦截、确认、降级或禁止；
+7. Executing 后必须进入 Verifying；
+8. Stop / Takeover invalidates pending queue；
+9. Learning Candidate is not Memory；
+10. Audit Event records done, not done, authorization used, and risk budget usage；
+11. Recovery is not Completed；
+12. Model confidence is not verification；
+13. Memory is not Permission；
+14. Capability is not Permission；
+15. Current context is not task boundary；
+16. One confirmation is not long-term authorization；
+17. StandingAuthorization is scoped, revocable, expirable, and auditable。
 ```
 
 ---
@@ -167,7 +172,11 @@ Task 是 Janus 承接的一次受托行动单元。
 - plan；
 - currentState；
 - permissionScope；
-- riskProfile；
+- autonomyLevel；
+- standingAuthorizationRef，如果存在；
+- riskBudgetRef，如果存在；
+- escalationPolicyRef；
+- recoveryPlanRef，如果存在；
 - executionHistory；
 - auditTrail；
 - userControlState。
@@ -219,7 +228,10 @@ Step 是最小可执行单位。
 - objectRef；
 - environmentRef；
 - permissionRequirement；
-- riskLevel；
+- autonomyLevel；
+- standingAuthorizationRequirement，如果需要；
+- riskBudgetRequirement；
+- escalationPolicy；
 - verificationRequirement；
 - timeout；
 - retryPolicy；
@@ -295,7 +307,87 @@ Permission 是用户授予 Janus 的可行动边界。
 
 系统能力不是 Permission。能访问某 App 不等于被授权执行所有动作。
 
-### 3.10 Risk / 风险
+### 3.10 AutonomyLevel / 自主等级
+
+AutonomyLevel 描述当前任务或 Step 允许 Janus 自主到什么程度。
+
+```text
+- level：L0-L5；
+- source：用户本次授权 / standing authorization / 组织策略；
+- allowedActionTypes；
+- escalationTriggers；
+- userVisibleSummary。
+```
+
+AutonomyLevel 不是模型能力等级，而是授权与风险治理后的执行等级。
+
+### 3.11 StandingAuthorization / 长期授权
+
+StandingAuthorization 是可复用、可撤销、可过期的授权规则。
+
+```text
+- grantor；
+- environmentScope；
+- objectScope；
+- actionScope；
+- autonomyLevelCeiling；
+- riskBudgetRef；
+- frequencyLimit；
+- duration / expiration；
+- revocationPath；
+- auditPolicy；
+- escalationPolicyRef。
+```
+
+一次确认不能自动生成 StandingAuthorization。
+
+### 3.12 RiskBudget / 风险预算
+
+RiskBudget 是可治理的风险范围，而不是抽象风险文案。
+
+```text
+- budgetId；
+- scope：任务 / 规则 / 组织策略；
+- allowedImpact；
+- objectLimits；
+- actionLimits；
+- frequency / amount / timeWindow；
+- reversibilityRequirement；
+- verificationRequirement；
+- escalationThreshold；
+- consumedEvents；
+- violationPolicy。
+```
+
+没有 RiskBudget 覆盖的外部影响自动执行不得进入 L4。
+
+### 3.13 EscalationPolicy / 升级策略
+
+EscalationPolicy 定义何时问用户、何时硬停、何时降级。
+
+```text
+- triggers；
+- escalationTarget：User / Admin / HardStop；
+- payloadRequirements；
+- allowedTemporaryOverride；
+- postEscalationAudit；
+```
+
+### 3.14 RecoveryPlan / 恢复计划
+
+RecoveryPlan 定义失败、安全停下或接管后的恢复路径。
+
+```text
+- safeState；
+- completedActions；
+- nonActions；
+- rollbackOptions；
+- userOptions；
+- downgradedRules；
+- trustRestorationSummary。
+```
+
+### 3.15 Risk / 风险
 
 Risk 是动作可能造成的后果类型与严重度。
 
@@ -310,7 +402,7 @@ Risk 是动作可能造成的后果类型与严重度。
 
 Risk 不是模型置信度。
 
-### 3.11 Verification Signal / Verification Event
+### 3.16 Verification Signal / Verification Event
 
 Verification Signal 是判断 Step 执行结果的证据。
 
@@ -325,7 +417,7 @@ Verification Signal 是判断 Step 执行结果的证据。
 
 Verification Event 至少记录 taskId、stepId、signalType、signalLevel、rawEvidenceRef、interpretedResult、confidence、ambiguity、negativeSignals、transitionRecommendation、userVisibleSummary。
 
-### 3.12 Memory / 记忆
+### 3.17 Memory / 记忆
 
 Memory 是经授权保存的偏好、规则或环境知识。
 
@@ -341,7 +433,7 @@ Memory 是经授权保存的偏好、规则或环境知识。
 
 Memory 不是默认长期学习。联系人映射、文件路径、组织知识、身份偏好不能静默保存。
 
-### 3.13 Audit Event / 审计事件
+### 3.18 Audit Event / 审计事件
 
 Audit Event 是可回放的行动记录。
 
@@ -355,7 +447,10 @@ Audit Event 是可回放的行动记录。
 - object，如果存在；
 - environment，如果存在；
 - permissionRef；
-- riskRef；
+- autonomyPolicyRef；
+- standingAuthorizationRef，如果使用；
+- riskBudgetRef；
+- riskBudgetUsage；
 - verificationResult；
 - externalImpact；
 - nonActions；
@@ -380,9 +475,11 @@ Janus Runtime
 ├── Intent Interpreter
 ├── Task Orchestrator
 ├── Planner
+├── Autonomy Policy Engine
 ├── Policy & Risk Engine
 ├── Permission Manager
-├── Confirmation Gate
+├── Risk Budget Manager
+├── Confirmation / Escalation Gate
 ├── Execution Engine
 ├── Verification Engine
 ├── Interrupt Controller
@@ -409,9 +506,11 @@ User Intent
 → Intent Interpreter
 → Task Orchestrator creates Task
 → Planner generates Plan / Step list
+→ Autonomy Policy Engine evaluates autonomy level
 → Policy & Risk Engine evaluates Plan
 → Permission Manager checks authorization
-→ UI State / Event Stream presents Understanding / Plan / Boundary, or folds them into Janus Surface executing trace for clear low-risk tasks
+→ Risk Budget Manager checks budget coverage and escalation thresholds
+→ UI State / Event Stream presents Understanding / Plan / Autonomy Policy / Risk Budget, or folds them into Janus Surface executing trace for clear authorized tasks
 → Execution Engine executes one authorized Step
 → Verification Engine verifies result
 → Task Orchestrator decides next state
@@ -433,8 +532,11 @@ User Intent
 | Intent Interpreter | 结构化 Intent、对象、环境、限制、不确定项 | 执行动作 |
 | Task Orchestrator | 创建 Task，维护状态机，协调计划、权限、执行、验证、中断、恢复、复盘 | 绕过策略直接执行 |
 | Planner | 生成 Plan / Step，并标注动作、对象、环境、风险、权限、验证、停下条件 | 直接执行动作 |
+| Autonomy Policy Engine | 根据任务、授权、风险预算和验证能力决定自主等级、自动执行、升级确认或停下 | 用模型置信度放行 |
 | Policy & Risk Engine | 风险分级、R 类候选拦截、确认 / 降级 / 禁止决策 | 只依赖 LLM 放行 |
 | Permission Manager | 管理授权状态，判断 Step 是否被覆盖 | 用能力替代授权 |
+| Risk Budget Manager | 管理风险预算、standing authorization 消耗、阈值、违规和升级策略 | 把预算当静态说明 |
+| Confirmation / Escalation Gate | 生成一次性确认、规则授权或超界升级 payload | 默认同意或默认创建长期授权 |
 | Execution Engine | 执行已授权且通过策略的单个 Step | 生成目标、放行风险、写 Memory |
 | Verification Engine | 验证 Step 结果，输出成功、失败、不确定或需用户确认 | 直接推进下一 Step |
 | Interrupt Controller | 处理 Stop / Pause / Takeover / Revoke，失效队列 | 当普通 UI 事件处理 |
@@ -443,7 +545,7 @@ User Intent
 | Memory & Learning Manager | 生成 Learning Candidate，授权后保存 Memory | 静默保存敏感经验 |
 | Recovery Manager | 失败、安全停下、接管后的恢复路径和信任恢复记录 | 掩盖失败或绕过授权继续 |
 | Adapter Registry / App Adapter | 描述环境能力，将通用 Action 转译为具体操作并返回 Evidence | 决定用户目标、风险或授权 |
-| Delegation Center Backend | 长期治理任务账本、权限规则、记忆治理、能力治理和恢复证据 | 普通设置存储或后台代理 |
+| Delegation Center Backend | 长期治理任务账本、授权规则、风险预算、standing authorization、记忆治理、能力治理和恢复证据 | 普通设置存储或后台代理 |
 | Privacy Boundary Manager | 数据分级、脱敏、外发控制、隐私审计 | 允许 D4 外发 |
 | Model Gateway | 管理模型输入、输出 schema、角色、审计和不确定性 | 执行或授权动作 |
 | Extension Sandbox | 约束第三方扩展权限、数据、网络、输出和审计 | 让扩展继承全部权限 |
@@ -458,7 +560,7 @@ release → VoiceCaptureCommitted → ASR / IntentSubmitted → 创建 Task；
 cancel → VoiceCaptureCancelled → 记录取消，不创建 Task。
 ```
 
-快路径可折叠 Janus Surface 中的 Understanding / Plan 展示，但不得跳过 Plan 建模、Policy Decision、Permission 检查、Verification Requirement、Audit Event 或 Confirmation Gate。清晰低风险任务可直接推进到准备结果；外部可见或 L4/L5 动作必须停在 WaitingForApproval。
+快路径可折叠 Janus Surface 中的 Understanding / Plan 展示，但不得跳过 Plan 建模、Autonomy Policy Decision、Permission 检查、Risk Budget 检查、Verification Requirement、Audit Event 或 Confirmation / Escalation Gate。清晰且授权覆盖的任务可直接推进到完成；外部可见或 L4/L5 动作必须匹配授权 / 风险策略，否则进入 WaitingForApproval。
 
 ---
 
@@ -472,7 +574,7 @@ cancel → VoiceCaptureCancelled → 记录取消，不创建 Task。
 | Understanding | 解析目标、对象、环境、限制 | NeedsClarification / Planned |
 | NeedsClarification | 意图、对象或范围不清 | Understanding / Cancelled |
 | Planned | 已生成 Plan 和 Step | BoundaryChecking / Cancelled |
-| BoundaryChecking | 检查权限、风险、确认要求 | WaitingForApproval / Ready / Blocked |
+| BoundaryChecking | 检查自主策略、权限、风险预算、确认要求 | WaitingForApproval / Ready / Blocked |
 | WaitingForApproval | 需要用户确认或授权 | Ready / Denied / UserTakingOver |
 | Ready | 满足执行前置条件 | Executing / Paused |
 | Executing | 执行单个已授权 Step | Verifying / Interrupted |
@@ -506,32 +608,33 @@ cancel → VoiceCaptureCancelled → 记录取消，不创建 Task。
 11. LearningCandidate 不能自动进入 MemorySaved。
 ```
 
-### 5.2 Permission State Machine
+### 5.2 Permission / Standing Authorization State Machine
 
 | 状态 | 含义 | 可退出方式 |
 |---|---|---|
 | Unrequested | 尚未请求授权 | Requested |
-| Requested | 已请求授权 | GrantedOnce / GrantedScoped / Denied |
+| Requested | 已请求授权 | GrantedOnce / GrantedScoped / GrantedRule / Denied |
 | GrantedOnce | 仅授权本次动作 | Consumed / Revoked |
 | GrantedScoped | 授权当前任务范围 | Expired / Revoked / Downgraded |
-| GrantedRule | 授权可复用规则 | Revoked / Expired / Downgraded |
+| GrantedRule | standing authorization，可复用规则 | Revoked / Expired / Downgraded / BudgetExceeded |
 | Denied | 用户拒绝 | Closed / Requested，需新理由 |
 | Revoked | 用户撤销 | Closed |
 | Expired | 授权过期 | Closed / Requested |
 | Escalated | 风险升高，需要更强确认 | Requested / Denied |
+| BudgetExceeded | 风险预算不足或违规 | Escalated / Revoked / Downgraded |
 | Downgraded | 因失败、风险或纠偏降级 | Requested，需重新授权 |
 | Consumed | 一次性授权已使用 | Closed |
 
 硬规则：
 
 ```text
-1. L4/L5 不得进入 GrantedRule；
+1. L4/L5 只有在明确 standing authorization + risk budget + verification + escalation policy 覆盖时才可进入 GrantedRule；
 2. GrantedOnce 使用后必须进入 Consumed；
 3. 一次确认不等于长期授权；
-4. 授权必须绑定 Environment、Object、Action、Scope、Risk、Duration；
+4. 授权必须绑定 Environment、Object、Action、Scope、Risk、Duration、AutonomyLevel；
 5. 允许读取一个文件不等于允许读取同目录；
 6. 允许当前任务操作某 App 不等于允许长期观察该 App；
-7. Risk 升高必须进入 Escalated；
+7. Risk 升高或 budget 不足必须进入 Escalated / BudgetExceeded；
 8. 失败或风险事件后相关授权应 Downgraded；
 9. Revoked 后不得由模型恢复；
 10. 授权只能来自用户显式行为、预设规则或组织策略。
@@ -544,8 +647,8 @@ cancel → VoiceCaptureCancelled → 记录取消，不创建 Task。
 | Created / Understanding | Entry / Understanding，低风险可折叠进执行态 Action Trace |
 | NeedsClarification | Blocked / Clarification |
 | Planned | Planning 或执行态可展开 Plan / Action Trace |
-| BoundaryChecking | Boundary 或 Action Trace 中的边界声明 |
-| WaitingForApproval | Confirming |
+| BoundaryChecking | Autonomy Policy / Risk Budget 或 Action Trace 中的边界声明 |
+| WaitingForApproval | Confirming / Escalation |
 | Ready / Executing / Verifying | Executing / Control State |
 | Blocked | Blocked |
 | Paused | 当前任务 Paused Capsule / Janus Surface |
@@ -618,7 +721,7 @@ macOS 授予屏幕录制权限 ≠ Janus 可以长期观察屏幕；
 
 ## 7. Planning、Policy 与 Permission
 
-Planner 负责“可以怎么做”，Policy & Risk Engine 负责“是否允许这样做”，Permission Manager 负责“用户是否授权这样做”。三者不可合并。
+Planner 负责“可以怎么做”，Autonomy Policy Engine 负责“自主到什么程度”，Policy & Risk Engine 负责“是否允许这样做”，Permission Manager 负责“用户是否授权这样做”，Risk Budget Manager 负责“预算是否覆盖并如何升级”。这些职责不可合并。
 
 ### 7.1 Planner 输入与输出
 
@@ -630,7 +733,10 @@ Planner 负责“可以怎么做”，Policy & Risk Engine 负责“是否允许
 - goalUnderstanding；
 - assumptions / uncertainties；
 - steps；
+- autonomyLevelCandidate；
+- riskBudgetRequirement；
 - confirmationPoints；
+- escalationPoints；
 - stopConditions；
 - nonActions；
 - requiredPermissions；
@@ -642,7 +748,7 @@ Planner 不得使用未授权 Memory 或超出当前任务的长期上下文。
 
 ### 7.2 Step 生成规则
 
-每个 Step 必须包含 Action、Object、Environment、Permission Requirement、Risk Level、Verification Requirement、Stop Condition、User Visible Summary。
+每个 Step 必须包含 Action、Object、Environment、AutonomyLevel、Permission Requirement、RiskBudget Requirement、Risk Level、Verification Requirement、Escalation Policy、Stop Condition、User Visible Summary。
 
 示例：
 
@@ -652,27 +758,32 @@ Action：Search
 Object：Contact(name=张三)
 Environment：WeChat
 Permission：CurrentTask / SearchContact
+AutonomyLevel：L1
+RiskBudget：不消耗外部影响预算
 Risk：L1
 Verification：候选列表出现，且候选数量可判断
 StopCondition：多候选或无法验证候选身份
 ```
 
-### 7.3 Policy Decision
+### 7.3 Autonomy Policy / Risk Budget Decision
 
-Policy & Risk Engine 对每个 Plan / Step 输出：
+Autonomy Policy Engine 与 Risk Budget Manager 对每个 Plan / Step 输出：
 
 ```text
-- decision：Allow / RequireConfirmation / Block / Deny / Downgrade；
-- riskLevel：L0-L5；
+- autonomyLevel：L0-L5；
+- authorizationCoverage：None / OneTime / Scoped / StandingAuthorization / OrgPolicy；
+- riskBudgetCoverage：Covered / Insufficient / Violated / NotRequired；
+- decision：Allow / RequireConfirmation / Escalate / Block / Deny / Downgrade；
 - reasons；
 - requiredPermission；
-- confirmationPayload；
+- budgetConsumption；
+- escalationPayload；
 - prohibitedActions；
 - requiredVerification；
 - userVisibleBoundary。
 ```
 
-Execution Engine 只能执行 decision = Allow 且授权覆盖的 Step。
+Execution Engine 只能执行 decision = Allow 且授权、风险预算、验证要求均覆盖的 Step。
 
 ### 7.4 风险等级
 
@@ -681,20 +792,20 @@ Execution Engine 只能执行 decision = Allow 且授权覆盖的 Step。
 | L0 | 观察 | 可自动 |
 | L1 | 导航 | 可自动，但需可见 |
 | L2 | 准备 | 可自动或轻确认，视对象敏感度 |
-| L3 | 本地状态变化 | 通常确认或任务内授权 |
-| L4 | 外部可见动作 | 必须确认 |
-| L5 | 高风险代理动作 | 强确认或禁止自动化 |
+| L3 | 本地状态变化 / 授权重复 | 任务内授权或 standing authorization |
+| L4 | 外部可见动作 | 需要 one-time confirmation、standing authorization 或 risk budget policy 覆盖；否则升级确认 |
+| L5 | 高风险代理动作 | 明确授权 / 组织策略 / 强确认；否则禁止自动化 |
 
 风险评估维度包括 Action Type、Object Sensitivity、Environment Type、External Impact、Reversibility、Identity Expression、Data Movement、Permission Change、Authentication、Verification Strength、User Explicitness、Historical Trust。
 
-### 7.5 Confirmation Gate
+### 7.5 Confirmation / Escalation Gate
 
 进入条件：
 
 ```text
-- L4/L5 动作；
-- 外部可见动作；
-- 删除、覆盖、上传、分享、提交；
+- L4/L5 动作缺少匹配授权或风险预算；
+- 外部可见动作未被 one-time confirmation / standing authorization / risk budget policy 覆盖；
+- 删除、覆盖、上传、分享、提交超出授权范围；
 - 支付、审批、权限修改；
 - 身份认证、验证码、密码；
 - 多候选且选择会产生外部影响；
